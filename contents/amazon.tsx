@@ -12,10 +12,32 @@ export const getStyle = () => {
   return style;
 };
 
+const queryShadowDOM = (element, selector) => {
+  if (element.shadowRoot) {
+    return element.shadowRoot.querySelector(selector);
+  }
+  return null;
+};
+
+const findElementInShadowDOM = (root, selector) => {
+  const elements = root.querySelectorAll('*');
+  for (const el of elements) {
+    const shadowElement = queryShadowDOM(el, selector);
+    if (shadowElement) {
+      return shadowElement;
+    }
+  }
+  return null;
+};
+
 const PlasmoOverlay = ({ selector, newValue }) => {
   useEffect(() => {
     if (selector && newValue) {
-      const element = document.querySelector(selector);
+      let element = document.querySelector(selector);
+      if (!element) {
+        // If element is not found, search within Shadow DOMs
+        element = findElementInShadowDOM(document, selector);
+      }
       if (element) {
         element.textContent = newValue;
       }
